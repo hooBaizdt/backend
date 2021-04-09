@@ -5,6 +5,26 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 
+/**
+ * Class AuthController
+ * @package App\Http\Controllers
+ *
+ * 授权请求：
+ * 1、添加 Authorization header
+ *  Authorization: Bearer eyJhbGciOiJIUzI1NiI...（Bearer + 空格 + access_token）
+ * 2、添加 Query string parameter
+ *  http://example.dev/me?token=eyJhbGciOiJIUzI1NiI... （参数名为 token）
+ *
+ * 示例：
+ * curl -X POST \
+ *      http://localhost:5700/api/auth/me \
+ *      -H 'Authorization: Bearer eyJ0eXAiOiJKV1Q...'
+ *
+ * curl -X POST \
+ *      'http://localhost:5700/api/auth/me?token=eyJ0eXAiOiJKV1...'
+ *
+ * 有个要注意的地方：5.5 中路由 routes/api.php 中的路由需要加上前缀 'api' 来访问
+ */
 class AuthController extends Controller
 {
     /**
@@ -26,7 +46,7 @@ class AuthController extends Controller
     {
         $credentials = request(['email', 'password']);
 
-        if (! $token = auth()->attempt($credentials)) {
+        if (! $token = auth('api')->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
@@ -40,7 +60,7 @@ class AuthController extends Controller
      */
     public function me()
     {
-        return response()->json(auth()->user());
+        return response()->json(auth('api')->user());
     }
 
     /**
@@ -50,7 +70,7 @@ class AuthController extends Controller
      */
     public function logout()
     {
-        auth()->logout();
+        auth('api')->logout();
 
         return response()->json(['message' => 'Successfully logged out']);
     }
@@ -62,7 +82,7 @@ class AuthController extends Controller
      */
     public function refresh()
     {
-        return $this->respondWithToken(auth()->refresh());
+        return $this->respondWithToken(auth('api')->refresh());
     }
 
     /**
@@ -77,7 +97,7 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60
+            'expires_in' => auth('api')->factory()->getTTL() * 60
         ]);
     }
 }
