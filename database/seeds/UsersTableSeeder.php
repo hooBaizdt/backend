@@ -19,5 +19,13 @@ class UsersTableSeeder extends Seeder
             'created_at' => \Carbon\Carbon::now(),
             'updated_at' => \Carbon\Carbon::now(),
         ]);
+
+        DB::table('admin_user')->insert([
+            'name' => 'awk',
+            'email' => '916809498@qq.com',
+            'password' => Hash::make('123456'),
+            'created_at' => \Carbon\Carbon::now(),
+            'updated_at' => \Carbon\Carbon::now(),
+        ]);
     }
 }

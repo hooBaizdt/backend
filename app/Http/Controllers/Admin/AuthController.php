@@ -1,30 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-/**
- * Class AuthController
- * @package App\Http\Controllers
- *
- * 授权请求：
- * 1、添加 Authorization header
- *  Authorization: Bearer eyJhbGciOiJIUzI1NiI...（Bearer + 空格 + access_token）
- * 2、添加 Query string parameter
- *  http://example.dev/me?token=eyJhbGciOiJIUzI1NiI... （参数名为 token）
- *
- * 示例：
- * curl -X POST \
- *      http://localhost:5700/api/auth/me \
- *      -H 'Authorization: Bearer eyJ0eXAiOiJKV1Q...'
- *
- * curl -X POST \
- *      'http://localhost:5700/api/auth/me?token=eyJ0eXAiOiJKV1...'
- *
- * 有个要注意的地方：5.5 中路由 routes/api.php 中的路由需要加上前缀 'api' 来访问
- */
 class AuthController extends Controller
 {
     /**
@@ -34,7 +14,7 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login']]);
+        $this->middleware('auth:admin', ['except' => ['login']]);
     }
 
     /**
@@ -53,7 +33,10 @@ class AuthController extends Controller
         // 单点登陆支持, 只保存一个 access_token, 如果可以多个设备登陆则不需要
         $previous_token = \Cache::tags('tokens')->get(request('email'));
         if ($previous_token) {
-            \JWTAuth::setToken($previous_token)->invalidate();
+            try {
+                \JWTAuth::setToken($previous_token)->invalidate();
+            } catch (\Exception $exception) {
+            }
         }
         \Cache::tags('tokens')->forever(request('email'), $token);
 
