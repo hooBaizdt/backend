@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use Predis\Client;
 
 /**
  * Class AuthController
@@ -49,6 +50,13 @@ class AuthController extends Controller
         if (! $token = auth('api')->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
+
+        // 单点登陆支持, 只保存一个 access_token, 如果可以多个设备登陆则不需要
+        $previous_token = \Cache::tags('tokens')->get(request('email'));
+        if ($previous_token) {
+            \JWTAuth::setToken($previous_token)->invalidate();
+        }
+        \Cache::tags('tokens')->forever(request('email'), $token);
 
         return $this->respondWithToken($token);
     }
