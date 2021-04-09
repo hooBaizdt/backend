@@ -48,6 +48,19 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+        // jwt 找不到已经登陆的用户 或者 框架默认的授权认证失败(没有通过 auth:api 中间件检查)
+        /** @see \Tymon\JWTAuth\JWTGuard::userOrFail */
+        /** @see \Illuminate\Auth\Middleware\Authenticate::authenticate */
+        if ($exception instanceof \Tymon\JWTAuth\Exceptions\UserNotDefinedException ||
+            $exception instanceof \Illuminate\Auth\AuthenticationException) {
+            return response()->json([
+                'code' => env('STATUS_CODE_NOT_LOGIN'),
+                'message' => '未登录'
+            ]);
+        }
+
         return parent::render($request, $exception);
     }
+
+
 }
