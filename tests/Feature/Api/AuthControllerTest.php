@@ -15,6 +15,11 @@ class AuthControllerTest extends TestCase
         $email = 'rubymay21s@gmail.com';
         $password = '123456';
 
+        $exists = \DB::table('users')->where('email', $email)->exists();
+        if ($exists) {
+            \DB::table('users')->where('email', $email)->delete();
+        }
+
         \DB::table('users')->insert([
             'name' => $name,
             'email' => $email,
@@ -23,11 +28,8 @@ class AuthControllerTest extends TestCase
             'updated_at' => \Carbon\Carbon::now(),
         ]);
 
-        $this->assertDatabaseHas('users', [
-            'name' => $name,
-            'email' => $email,
-            'password' => \Hash::make($password)
-        ]);
+        $exists = \DB::table('users')->where('email', $email)->exists();
+        $this->assertTrue($exists);
 
         return compact('name', 'email', 'password');
     }
@@ -107,7 +109,5 @@ class AuthControllerTest extends TestCase
         $response->assertJson([
             'message' => true,
         ]);
-
-//        \DB::table('users')->where('email', $this->user['email'])->delete();
     }
 }
